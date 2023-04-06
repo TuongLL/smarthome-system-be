@@ -9,6 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { ActiveDocument } from 'src/entities/active.schema';
 import { compare, hashPassword } from 'src/utils';
 import { JwtService } from '@nestjs/jwt';
+import { UserDto } from 'src/devices/dto';
 
 @Injectable()
 export class UserService {
@@ -16,9 +17,9 @@ export class UserService {
         @InjectModel('actives') private readonly activeModel: Model<ActiveDocument>,
         private readonly jwtService: JwtService) { }
 
-    async getAllUser(): Promise<Response<User[]>> {
+    async getAllUser(): Promise<Response<UserDto[]>> {
         try {
-            const users = await this.userModel.find().lean()
+            const users = await this.userModel.find().select('-password')
             return {
                 code: HttpStatus.OK,
                 message: HTTP_MESSAGE.OK,
@@ -31,7 +32,7 @@ export class UserService {
 
     async getUserById(id: string): Promise<Response<User>> {
         try {
-            const user = await this.userModel.findById(id).exec()
+            const user = await this.userModel.findById(id).select('-password')
             return {
                 code: HttpStatus.OK,
                 message: HTTP_MESSAGE.OK,
@@ -47,7 +48,7 @@ export class UserService {
             _id: {
                 $in: userIds.map(id => new Types.ObjectId(id))
             }
-        })
+        }).select('-password')
         return {
             code: HttpStatus.OK,
             message: HTTP_MESSAGE.OK,
@@ -118,15 +119,15 @@ export class UserService {
 
     }
 
-    async updateUser(userUpdateDto: UserUpdateDto): Promise<Response<null>> {
+    async updateUser(userUpdateDto: UserUpdateDto): Promise<Response<UserDto>> {
         const { id, ...updateInfo } = userUpdateDto
 
-        const user = await this.userModel.findByIdAndUpdate(id, { ...updateInfo }, { new: true }).lean()
-        console.log(user)
+        const user = await this.userModel.findByIdAndUpdate(id, { ...updateInfo }, { new: true }).select('-password')
         if (!user) throw new HttpException('USER NOT FOUND', HttpStatus.NOT_FOUND)
         return {
             code: HttpStatus.OK,
             message: HTTP_MESSAGE.OK,
+            data: user
         }
 
     }
