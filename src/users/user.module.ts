@@ -4,6 +4,9 @@ import { UserService } from './user.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserSchema } from 'src/entities/user.schema';
 import { ActiveSchema } from 'src/entities/active.schema';
+import { PassportModule } from '@nestjs/passport';
+import { JwtModule } from '@nestjs/jwt';
+import { JwtStrategy } from 'src/auth/jwt.strategy';
 
 @Module({
     imports: [MongooseModule.forFeature([
@@ -15,8 +18,18 @@ import { ActiveSchema } from 'src/entities/active.schema';
             name: "actives",
             schema: ActiveSchema
         }
-    ])],
+    ]),
+        PassportModule,
+    JwtModule.registerAsync({
+        useFactory: () => ({
+            secret: process.env.SECRET_JWT,
+            signOptions: { expiresIn: '60s' },
+        })
+    })
+
+    ],
     controllers: [UserController],
-    providers: [UserService],
+    providers: [UserService, JwtStrategy],
+    exports: [UserService]
 })
 export class UserModule { }

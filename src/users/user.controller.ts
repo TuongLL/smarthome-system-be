@@ -1,11 +1,14 @@
-import { Controller, Get, Post, Body, Put, Param, Delete } from '@nestjs/common';
-import { Response } from '../interfaces';
-import { UserService } from './user.service';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiExtraModels } from '@nestjs/swagger';
+import { JwtAuthGuard } from 'src/auth/jwt.-auth.guard';
 import { User } from 'src/entities/user.schema';
-import { UserLogin, UserRegister } from './interfaces';
-import { UserActiveDto, UserLoginDto, UserRegisterDto, UserUpdateDto } from './dto';
+import { Response } from '../interfaces';
+import { UserActiveDto, UserByIds, UserUpdateDto } from './dto';
+import { UserService } from './user.service';
 
 @Controller('users')
+@UseGuards(JwtAuthGuard)
+@ApiTags('users')
 export class UserController {
     constructor(private readonly userService: UserService) { }
     @Get()
@@ -18,14 +21,9 @@ export class UserController {
         return await this.userService.getUserById(id)
     }
 
-    @Post('register')
-    async register(@Body() userDto: UserRegisterDto): Promise<Response<UserRegister>> {
-        return await this.userService.register(userDto)
-    }
-
-    @Post('login')
-    async login(@Body() userDto: UserLoginDto): Promise<Response<UserLogin>> {
-        return await this.userService.login(userDto)
+    @Post()
+    async getUserByIds(@Body() userByIds: UserByIds): Promise<Response<User[]>> {
+        return await this.userService.getUserByIds(userByIds.userIds)
     }
 
     @Post('active')
@@ -35,8 +33,8 @@ export class UserController {
 
     @Post('update')
     async updateUser(@Body() updateUserDto: UserUpdateDto): Promise<Response<null>> {
-        console.log(updateUserDto)
         return await this.userService.updateUser(updateUserDto)
     }
 
 }
+

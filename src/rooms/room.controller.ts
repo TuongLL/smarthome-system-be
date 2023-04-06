@@ -1,10 +1,14 @@
-import { Controller, Get, Body, Post, Param } from "@nestjs/common";
+import { Controller, Get, Body, Post, Param, UseGuards } from "@nestjs/common";
 import { Room } from "src/entities/room.schema";
 import { Response } from "src/interfaces";
 import { RoomService } from "./room.service";
 import { AddUserToRoomDto, CreateRoomDto } from "./dto";
+import { JwtAuthGuard } from "src/auth/jwt.-auth.guard";
+import { ApiTags } from "@nestjs/swagger";
 
 @Controller('rooms')
+@ApiTags('rooms')
+@UseGuards(JwtAuthGuard)
 export class RoomController {
     constructor(private readonly roomService: RoomService) { }
 

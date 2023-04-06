@@ -1,6 +1,6 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose'
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { UserDocument, User } from 'src/entities/user.schema';
 import { HTTP_MESSAGE, Response } from 'src/interfaces';
 import { UserLoginDto, UserRegisterDto, UserUpdateDto } from './dto';
@@ -8,11 +8,13 @@ import { UserLogin, UserRegister } from './interfaces';
 import { v4 as uuidv4 } from 'uuid';
 import { ActiveDocument } from 'src/entities/active.schema';
 import { compare, hashPassword } from 'src/utils';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UserService {
     constructor(@InjectModel('users') private readonly userModel: Model<UserDocument>,
-        @InjectModel('actives') private readonly activeModel: Model<ActiveDocument>) { }
+        @InjectModel('actives') private readonly activeModel: Model<ActiveDocument>,
+        private readonly jwtService: JwtService) { }
 
     async getAllUser(): Promise<Response<User[]>> {
         try {
@@ -37,6 +39,19 @@ export class UserService {
             }
         } catch (err) {
             throw new HttpException(HTTP_MESSAGE.NOT_FOUND, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    async getUserByIds(userIds: string[]): Promise<Response<User[]>> {
+        const users = await this.userModel.find({
+            _id: {
+                $in: userIds.map(id => new Types.ObjectId(id))
+            }
+        })
+        return {
+            code: HttpStatus.OK,
+            message: HTTP_MESSAGE.OK,
+            data: users
         }
     }
 
@@ -81,8 +96,8 @@ export class UserService {
                     createdAt: user.createdAt,
                     email: user.email,
                     firstName: user.firstName,
-                    lastName: user.lastName
-
+                    lastName: user.lastName,
+                    accessToken: this.jwtService.sign(user)
                 }
             }
         }

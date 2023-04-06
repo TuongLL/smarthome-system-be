@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable, HttpException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import { Model } from 'mongoose'
+import { Model, Types } from 'mongoose'
 import { Device, DeviceDocument } from 'src/entities/device.schema'
 import { HTTP_MESSAGE, Response } from 'src/interfaces'
 import { CreateDeviceDto } from './dto'
@@ -51,8 +51,21 @@ export class DeviceService {
         else throw new HttpException('Room Not Found', HttpStatus.NOT_FOUND)
     }
 
+    async getDeviceByIds(deviceIds: string[]): Promise<Response<Device[]>> {
+        const devices = await this.deviceModel.find({
+            _id: {
+                $in: deviceIds.map(id => new Types.ObjectId(id))
+            }
+        })
+        return {
+            code: HttpStatus.OK,
+            message: HTTP_MESSAGE.OK,
+            data: devices
+        }
+    }
+
     async addDeviceToRoom(roomId: string, deviceId: string): Promise<Response<Room>> {
-        const deviceInRoom = await this.checkUserInRoom(roomId, deviceId)
+        const deviceInRoom = await this.checkDeviceInRoom(roomId, deviceId)
         if (deviceInRoom.data == true) throw new HttpException('Device already exist in Room', HttpStatus.BAD_REQUEST)
         const room = await this.roomModel.findByIdAndUpdate(roomId, {
             $push: {
@@ -66,7 +79,7 @@ export class DeviceService {
         }
     }
 
-    async checkUserInRoom(roomId: string, deviceId: string): Promise<Response<boolean>> {
+    async checkDeviceInRoom(roomId: string, deviceId: string): Promise<Response<boolean>> {
         const device = await this.deviceModel.findById(deviceId).lean()
         if (!device) throw new HttpException('Device Not Found', HttpStatus.NOT_FOUND)
         const room = await this.roomModel.findById(roomId).lean()

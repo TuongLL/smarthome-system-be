@@ -12,4 +12,5 @@ export interface UserLogin {
     lastName: string,
     active: boolean,
     createdAt: Date,
+    accessToken: string;
 } 
