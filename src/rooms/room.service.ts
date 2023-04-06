@@ -24,14 +24,15 @@ export class RoomService {
         }
     }
 
-    async createRoom(roomInfo: CreateRoomDto): Promise<Response<null>> {
+    async createRoom(roomInfo: CreateRoomDto): Promise<Response<Room>> {
         try {
-            await this.roomModel.create({
+            const room = await this.roomModel.create({
                 ...roomInfo
             })
             return {
                 code: HttpStatus.OK,
                 message: HTTP_MESSAGE.OK,
+                data: room
             }
         } catch (err) {
             throw new HttpException(HTTP_MESSAGE.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -50,10 +51,10 @@ export class RoomService {
         else throw new HttpException('Room Not Found', HttpStatus.NOT_FOUND)
     }
 
-    async addUserToRoom(roomId: string, userId: string): Promise<Response<null>> {
+    async addUserToRoom(roomId: string, userId: string): Promise<Response<Room>> {
         const userInRoom = await this.checkUserInRoom(roomId, userId)
         if (userInRoom.data == true) throw new HttpException('User already exist in Room', HttpStatus.BAD_REQUEST)
-        await this.roomModel.findByIdAndUpdate(roomId, {
+        const room = await this.roomModel.findByIdAndUpdate(roomId, {
             $push: {
                 userIds: userId
             }
@@ -61,6 +62,7 @@ export class RoomService {
         return {
             code: HttpStatus.OK,
             message: HTTP_MESSAGE.OK,
+            data: room
         }
 
     }

@@ -12,18 +12,19 @@ export class RoomController {
     async getAllRooms(): Promise<Response<Room[]>> {
         return await this.roomService.getAllRooms()
     }
-    @Post()
-    async createRoom(@Body() createRoomDto: CreateRoomDto): Promise<Response<null>> {
-        return await this.roomService.createRoom(createRoomDto)
-    }
-
+    
     @Get(':roomId')
     async getRoomById(@Param('roomId') roomId: string): Promise<Response<Room>> {
         return await this.roomService.getRoomById(roomId);
     }
+    
+    @Post()
+    async createRoom(@Body() createRoomDto: CreateRoomDto): Promise<Response<Room>> {
+        return await this.roomService.createRoom(createRoomDto)
+    }
 
     @Post(':roomId/users')
-    async addUserToRoom(@Param('roomId') roomId: string, @Body() addUserToRoom: AddUserToRoomDto): Promise<Response<null>> {
+    async addUserToRoom(@Param('roomId') roomId: string, @Body() addUserToRoom: AddUserToRoomDto): Promise<Response<Room>> {
         return await this.roomService.addUserToRoom(roomId, addUserToRoom.userId);
     }
 

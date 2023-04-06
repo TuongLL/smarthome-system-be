@@ -4,7 +4,7 @@ import { Model } from 'mongoose'
 import { Device, DeviceDocument } from 'src/entities/device.schema'
 import { HTTP_MESSAGE, Response } from 'src/interfaces'
 import { CreateDeviceDto } from './dto'
-import { RoomDocument } from 'src/entities/room.schema'
+import { Room, RoomDocument } from 'src/entities/room.schema'
 import { indexOf } from 'lodash'
 @Injectable()
 export class DeviceService {
@@ -24,14 +24,15 @@ export class DeviceService {
         }
     }
 
-    async createDevice(deviceInfo: CreateDeviceDto): Promise<Response<null>> {
+    async createDevice(deviceInfo: CreateDeviceDto): Promise<Response<Device>> {
         try {
-            await this.deviceModel.create({
+            const device = await this.deviceModel.create({
                 ...deviceInfo
             })
             return {
                 code: HttpStatus.OK,
                 message: HTTP_MESSAGE.OK,
+                data: device
             }
         } catch (err) {
             throw new HttpException(HTTP_MESSAGE.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -50,10 +51,10 @@ export class DeviceService {
         else throw new HttpException('Room Not Found', HttpStatus.NOT_FOUND)
     }
 
-    async addDeviceToRoom(roomId: string, deviceId: string): Promise<Response<null>> {
+    async addDeviceToRoom(roomId: string, deviceId: string): Promise<Response<Room>> {
         const deviceInRoom = await this.checkUserInRoom(roomId, deviceId)
         if (deviceInRoom.data == true) throw new HttpException('Device already exist in Room', HttpStatus.BAD_REQUEST)
-        await this.roomModel.findByIdAndUpdate(roomId, {
+        const room = await this.roomModel.findByIdAndUpdate(roomId, {
             $push: {
                 deviceIds: deviceId
             }
@@ -61,6 +62,7 @@ export class DeviceService {
         return {
             code: HttpStatus.OK,
             message: HTTP_MESSAGE.OK,
+            data: room
         }
     }
 

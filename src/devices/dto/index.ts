@@ -13,3 +13,9 @@ export class CreateDeviceDto {
     @IsString()
     feed:string;
 }
+
+export class AddDeviceToRoomDto {
+    @IsNotEmpty()
+    @IsString()
+    deviceId: string;
+}
