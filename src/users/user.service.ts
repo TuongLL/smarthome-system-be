@@ -9,12 +9,14 @@ import { v4 as uuidv4 } from 'uuid';
 import { ActiveDocument } from 'src/entities/active.schema';
 import { compare, hashPassword } from 'src/utils';
 import { JwtService } from '@nestjs/jwt';
-import { UserDto } from 'src/devices/dto';
+import { UserDto } from '../devices/dto';
+import { Room, RoomDocument } from 'src/entities/room.schema';
 
 @Injectable()
 export class UserService {
     constructor(@InjectModel('users') private readonly userModel: Model<UserDocument>,
         @InjectModel('actives') private readonly activeModel: Model<ActiveDocument>,
+        @InjectModel('rooms') private readonly roomModel: Model<RoomDocument>,
         private readonly jwtService: JwtService) { }
 
     async getAllUser(): Promise<Response<UserDto[]>> {
@@ -33,6 +35,35 @@ export class UserService {
     async getUserById(id: string): Promise<Response<User>> {
         try {
             const user = await this.userModel.findById(id).select('-password')
+            return {
+                code: HttpStatus.OK,
+                message: HTTP_MESSAGE.OK,
+                data: user
+            }
+        } catch (err) {
+            throw new HttpException(HTTP_MESSAGE.NOT_FOUND, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    async getRoomsOfUser(userId: string): Promise<Response<Room[]>> {
+        try {
+            const user = await this.userModel.findById(userId).lean()
+            const rooms = await Promise.all(user.roomIds.map(async roomId => {
+                return await this.roomModel.findById(roomId)
+            }))
+            return {
+                code: HttpStatus.OK,
+                message: HTTP_MESSAGE.OK,
+                data: rooms
+            }
+        } catch (err) {
+            throw new HttpException(HTTP_MESSAGE.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    async getUserByEmail(email: string): Promise<Response<User>> {
+        try {
+            const user = await this.userModel.findOne({ email }).select('-password')
             return {
                 code: HttpStatus.OK,
                 message: HTTP_MESSAGE.OK,
@@ -87,12 +118,12 @@ export class UserService {
     async login(userDto: UserLoginDto): Promise<Response<UserLogin>> {
 
         const user = await this.userModel.findOne({ email: userDto.email }).lean();
-
         if (user && await compare(userDto.password, user.password)) {
             return {
                 code: HttpStatus.OK,
                 message: HTTP_MESSAGE.OK,
                 data: {
+                    id: user._id,
                     active: user.active,
                     createdAt: user.createdAt,
                     email: user.email,

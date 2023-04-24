@@ -13,8 +13,11 @@ export class User {
     @Prop()
     email: string;
 
-    @Prop({select: false})
+    @Prop()
     password: string
+
+    @Prop()
+    roomIds: string[]
 
     @Prop({default: false})
     active: boolean;

@@ -16,7 +16,10 @@ export class Device {
     @Prop()
     feed: string;
 
-    @Prop()
+    @Prop({default: {
+        state: false,
+        timestamps: new Date()
+    }})
     record: [
         {
             state: boolean;

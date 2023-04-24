@@ -7,6 +7,7 @@ import { ActiveSchema } from 'src/entities/active.schema';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from 'src/auth/jwt.strategy';
+import { RoomSchema } from 'src/entities/room.schema';
 
 @Module({
     imports: [MongooseModule.forFeature([
@@ -17,6 +18,10 @@ import { JwtStrategy } from 'src/auth/jwt.strategy';
         {
             name: "actives",
             schema: ActiveSchema
+        },
+        {
+            name: "rooms",
+            schema: RoomSchema
         }
     ]),
         PassportModule,

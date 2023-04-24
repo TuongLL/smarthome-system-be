@@ -51,6 +51,18 @@ export class DeviceService {
         else throw new HttpException('Room Not Found', HttpStatus.NOT_FOUND)
     }
 
+    async getDeviceByType(type: string): Promise<Response<Device[]>> {
+        const device = await this.deviceModel.find({type}).lean()
+        if (device) {
+            return {
+                code: HttpStatus.OK,
+                message: HTTP_MESSAGE.OK,
+                data: device
+            }
+        }
+        else throw new HttpException('Room Not Found', HttpStatus.NOT_FOUND)
+    }
+
     async getDeviceByIds(deviceIds: string[]): Promise<Response<Device[]>> {
         const devices = await this.deviceModel.find({
             _id: {
@@ -64,30 +76,6 @@ export class DeviceService {
         }
     }
 
-    async addDeviceToRoom(roomId: string, deviceId: string): Promise<Response<Room>> {
-        const deviceInRoom = await this.checkDeviceInRoom(roomId, deviceId)
-        if (deviceInRoom.data == true) throw new HttpException('Device already exist in Room', HttpStatus.BAD_REQUEST)
-        const room = await this.roomModel.findByIdAndUpdate(roomId, {
-            $push: {
-                deviceIds: deviceId
-            }
-        }, { new: true }).lean()
-        return {
-            code: HttpStatus.OK,
-            message: HTTP_MESSAGE.OK,
-            data: room
-        }
-    }
 
-    async checkDeviceInRoom(roomId: string, deviceId: string): Promise<Response<boolean>> {
-        const device = await this.deviceModel.findById(deviceId).lean()
-        if (!device) throw new HttpException('Device Not Found', HttpStatus.NOT_FOUND)
-        const room = await this.roomModel.findById(roomId).lean()
-        if (!room) throw new HttpException('Room Not Found', HttpStatus.NOT_FOUND)
-        return {
-            code: HttpStatus.OK,
-            message: HTTP_MESSAGE.OK,
-            data: (indexOf(room.deviceIds, deviceId) == -1) ? false : true
-        }
-    }
+   
 }

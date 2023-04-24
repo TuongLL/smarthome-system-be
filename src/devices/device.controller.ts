@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common'
 import { DeviceService } from './device.service';
 import { Response } from 'src/interfaces';
 import { Device } from 'src/entities/device.schema';
-import { AddDeviceToRoomDto, CreateDeviceDto, DeviceByIds } from './dto';
+import { AddDeviceToRoomDto, CreateDeviceDto, DeviceByIdsDto } from './dto';
 import { Room } from 'src/entities/room.schema';
 import { JwtAuthGuard } from 'src/auth/jwt.-auth.guard';
 import { ApiTags } from '@nestjs/swagger';
@@ -10,7 +10,7 @@ import { ApiTags } from '@nestjs/swagger';
 
 @Controller('devices')
 @ApiTags('devices')
-@UseGuards(JwtAuthGuard)
+// @UseGuards(JwtAuthGuard)
 
 export class DeviceController {
     constructor(private readonly deviceService: DeviceService){}
@@ -21,12 +21,17 @@ export class DeviceController {
     }
   
     @Get(':deviceId')
-    async getRoomById(@Param('deviceId') deviceId: string): Promise<Response<Device>> {
+    async getDeviceById(@Param('deviceId') deviceId: string): Promise<Response<Device>> {
         return await this.deviceService.getDeviceById(deviceId);
     }
 
+    @Get('type/:type')
+    async getDeviceByType(@Param('type') type: string): Promise<Response<Device[]>> {
+        return await this.deviceService.getDeviceByType(type);
+    }
+
     @Post()
-    async getDeviceByIds(@Body() deviceByIds: DeviceByIds): Promise<Response<Device[]>> {
+    async getDeviceByIds(@Body() deviceByIds: DeviceByIdsDto): Promise<Response<Device[]>> {
         return await this.deviceService.getDeviceByIds(deviceByIds.deviceIds)
     }
 
@@ -35,14 +40,10 @@ export class DeviceController {
         return await this.deviceService.createDevice(createDeviceDto)
     }
 
-    @Post(':roomId/devices')
-    async addDeviceToRoom(@Param('roomId') roomId: string, @Body() addDeviceToRoom: AddDeviceToRoomDto): Promise<Response<Room>> {
-        return await this.deviceService.addDeviceToRoom(roomId, addDeviceToRoom.deviceId);
-    }
 
-    @Post(':roomId/devices/:deviceId')
-    async checkDeviceInRoom(@Param('roomId') roomId: string, @Param('deviceId') deviceId: string): Promise<Response<boolean>> {
-        return await this.deviceService.checkDeviceInRoom(roomId, deviceId);
-    }
+    // @Post(':roomId/devices/:deviceId')
+    // async checkDeviceInRoom(@Param('roomId') roomId: string, @Param('deviceId') deviceId: string): Promise<Response<boolean>> {
+    //     return await this.deviceService.checkDeviceInRoom(roomId, deviceId);
+    // }
 
 }   

@@ -1,10 +1,11 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { ApiInternalServerErrorResponse, ApiOkResponse, ApiResponse, ApiTags, ApiNotFoundResponse, ApiOperation } from '@nestjs/swagger';
-import { UserDto } from 'src/devices/dto';
 import { User } from 'src/entities/user.schema';
 import { Response } from '../interfaces';
-import { UserActiveDto, UserByIds, UserUpdateDto } from './dto';
+import { UserActiveDto, UserByIdsDto, UserUpdateDto } from './dto';
 import { UserService } from './user.service';
+import { UserDto } from '../devices/dto';
+import { Room } from 'src/entities/room.schema';
 
 @Controller('users')
 // @UseGuards(JwtAuthGuard)
@@ -37,6 +38,25 @@ export class UserController {
         return await this.userService.getUserById(id)
     }
 
+    @Get('/:userId/rooms')
+    async getRoomsOfUser(@Param('userId') userId: string): Promise<Response<Room[]>> {
+        return await this.userService.getRoomsOfUser(userId)
+    }
+
+    @Get('/email:/email')
+    @ApiOperation({ summary: 'Get user by email' })
+    @ApiResponse({
+        status: 200,
+        description: 'Returns an user',
+        type: UserDto,
+    })
+    @ApiNotFoundResponse({
+        description: 'User Not Found'
+    })
+    async getUserByEmail(@Param('email') email: string): Promise<Response<UserDto>> {
+        return await this.userService.getUserByEmail(email)
+    }
+
     @Post()
     @ApiOperation({ summary: 'Get list of users by userIds' })
     @ApiResponse({
@@ -45,7 +65,7 @@ export class UserController {
         type: [UserDto],
     })
     @ApiInternalServerErrorResponse({ description: 'Internal Server Error' })
-    async getUserByIds(@Body() userByIds: UserByIds): Promise<Response<User[]>> {
+    async getUserByIds(@Body() userByIds: UserByIdsDto): Promise<Response<User[]>> {
         return await this.userService.getUserByIds(userByIds.userIds)
     }
 
