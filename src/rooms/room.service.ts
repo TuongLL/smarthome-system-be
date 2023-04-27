@@ -108,7 +108,6 @@ export class RoomService {
     async removeDeviceInRoom(roomId: string, deviceId: string): Promise<Response<Room>> {
         const { data } = await this.getRoomById(roomId)
         const deviceIds = data.deviceIds
-        console.log(deviceIds, deviceId)
         const room = await this.roomModel.findByIdAndUpdate(roomId, {
             deviceIds: deviceIds.filter(id => id !== deviceId)
         }, { new: true }).lean()

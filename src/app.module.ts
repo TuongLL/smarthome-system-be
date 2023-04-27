@@ -6,6 +6,7 @@ import { RoomModule } from './rooms/room.module';
 import { UserModule } from './users/user.module';
 import { AuthModule } from './auth/auth.module';
 import { MqttModule } from './mqtt/mqtt.module';
+import { TemperaturesModule } from './temperatures/temperatures.module';
 
 @Module({
   imports: [MongooseModule.forRootAsync({
@@ -15,7 +16,7 @@ import { MqttModule } from './mqtt/mqtt.module';
       uri: config.get<string>('MONGO_URI'), // Loaded from .ENV
     })
   }), ConfigModule.forRoot({ isGlobal: true, }),
-    UserModule, RoomModule, DeviceModule, AuthModule, MqttModule],
+    UserModule, RoomModule, DeviceModule, AuthModule, MqttModule, TemperaturesModule],
   controllers: [],
   providers: [],
 })

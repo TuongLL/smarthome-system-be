@@ -8,13 +8,12 @@ export class MqttController {
     constructor(private readonly mqttService: MqttService) { }
 
     @Post("/light")
-    sendLightState(@Body() light: LightDto) {
+    sendLightState(@Body() light: LightDto, @Ctx() context: MqttContext) {
         return this.mqttService.sendLightState(light);
     }
 
     @Post("/fan")
-    sendFanState(@Body() fan: FanDto) {
-        console.log('fan')
+    sendFanState(@Body() fan: FanDto, @Ctx() context: MqttContext) {
         return this.mqttService.sendFanState(fan);
     }
 }

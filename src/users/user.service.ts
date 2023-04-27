@@ -47,8 +47,8 @@ export class UserService {
 
     async getRoomsOfUser(userId: string): Promise<Response<Room[]>> {
         try {
-            const user = await this.userModel.findById(userId).lean()
-            const rooms = await Promise.all(user.roomIds.map(async roomId => {
+            const {data: userResponse} = await this.getUserById(userId)
+            const rooms = await Promise.all(userResponse.roomIds.map(async roomId => {
                 return await this.roomModel.findById(roomId)
             }))
             return {
@@ -60,6 +60,26 @@ export class UserService {
             throw new HttpException(HTTP_MESSAGE.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    async removeUserInRoom(userId: string, roomId: string): Promise<Response<User>> {
+        try {
+            const {data: userResponse} = await this.getUserById(userId)
+            const roomsIds = userResponse.roomIds
+            const user = await this.userModel.findByIdAndUpdate(userId, {
+                roomIds: roomsIds.filter((id: string) => id !== roomId)
+            },{ new: true }).lean()
+            return {
+                code: HttpStatus.OK,
+                message: HTTP_MESSAGE.OK,
+                data: user
+            }
+
+        } catch (err) {
+            throw new HttpException(HTTP_MESSAGE.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    
 
     async getUserByEmail(email: string): Promise<Response<User>> {
         try {

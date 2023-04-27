@@ -40,7 +40,17 @@ export class DeviceController {
         return await this.deviceService.createDevice(createDeviceDto)
     }
 
+    @Post('/:deviceId/light')
+    async toggleStatus(@Param('deviceId') deviceId: string,@Body() dto: {status: boolean}): Promise<Response<Device>> {
+        return await this.deviceService.toggleStatus(deviceId, dto.status)
+    }
 
+    @Post('/:deviceId/fan')
+    async changeSpeed(@Param('deviceId') deviceId: string,@Body() dto: {value: number}): Promise<Response<Device>> {
+        return await this.deviceService.changeSpeed(deviceId, dto.value)
+    }
+
+    
     // @Post(':roomId/devices/:deviceId')
     // async checkDeviceInRoom(@Param('roomId') roomId: string, @Param('deviceId') deviceId: string): Promise<Response<boolean>> {
     //     return await this.deviceService.checkDeviceInRoom(roomId, deviceId);

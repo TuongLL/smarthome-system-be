@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiInternalServerErrorResponse, ApiOkResponse, ApiResponse, ApiTags, ApiNotFoundResponse, ApiOperation } from '@nestjs/swagger';
 import { User } from 'src/entities/user.schema';
 import { Response } from '../interfaces';
@@ -41,6 +41,12 @@ export class UserController {
     @Get('/:userId/rooms')
     async getRoomsOfUser(@Param('userId') userId: string): Promise<Response<Room[]>> {
         return await this.userService.getRoomsOfUser(userId)
+    }
+
+    @Patch('/:userId/rooms/:roomId')
+    @ApiOperation({ summary: 'Remove User from room' })
+    async removeUserInRoom(@Param('userId') userId: string, @Param('roomId') roomId: string): Promise<Response<User>> {
+        return await this.userService.removeUserInRoom(userId, roomId)
     }
 
     @Get('/email:/email')
